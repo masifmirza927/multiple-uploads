@@ -14,7 +14,7 @@ app.post("/uploads", upload.array('images'), async (request, response) => {
 
 
     request.files.forEach((image, index) => {
-        uploadImage(request, image, index);
+        uploadImages(request, image, index);
     });
 
     try {
@@ -40,11 +40,27 @@ app.post("/uploads", upload.array('images'), async (request, response) => {
 });
 
 
-function uploadImage(request, image, ind) {
+// multiple
+function uploadImages(request, image, ind) {
     if (image.mimetype == "image/png" || image.mimetype == "image/jpg" || image.mimetype == "image/jpeg") {
         let ext = image.mimetype.split("/")[1];
         const NewImgName = image.path + "." + ext;
         request.body['image' + ind] = NewImgName;
+        fs.rename(image.path, NewImgName, () => { console.log("uploaded") });
+    } else {
+        fs.unlink(image.path, () => { console.log("deleted") })
+        return response.json({
+            status: "not allowed"
+        })
+    }
+}
+
+// single image
+function uploadImageSingle(request, image) {
+    if (image.mimetype == "image/png" || image.mimetype == "image/jpg" || image.mimetype == "image/jpeg") {
+        let ext = image.mimetype.split("/")[1];
+        const NewImgName = image.path + "." + ext;
+        request.body.image = NewImgName;
         fs.rename(image.path, NewImgName, () => { console.log("uploaded") });
     } else {
         fs.unlink(image.path, () => { console.log("deleted") })
