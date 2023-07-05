@@ -8,6 +8,34 @@ const ProductModel = require("./models/ProductModel");
 const UserModel = require("./models/UserModel");
 const bcrypt = require('bcrypt');
 
+app.post("/uploads", upload.array('images'), async (request, response) => {
+
+
+    request.files.forEach((image, index) => {
+        uploadImages(request, image, index);
+    });
+
+    try {
+        await ProductModel.create(request.body);
+        response.json({
+            status: true
+        })
+    } catch (error) {
+        if (error.name === "ValidationError") {
+            let errors = {};
+
+            Object.keys(error.errors).forEach((key) => {
+                errors[key] = error.errors[key].message;
+            });
+
+            return response.json({
+                status: false,
+                errors: errors
+            })
+        }
+    }
+
+});
 
 
 // create user
@@ -22,15 +50,15 @@ app.post("/signup", upload.single('image'), async (request, response) => {
 
     try {
         // check already registerd or not
-        const userExist = await UserModel.find({ email: request.body.email});
-        if(userExist.length > 0) {
+        const userExist = await UserModel.find({ email: request.body.email });
+        if (userExist.length > 0) {
             response.json({
                 status: false,
                 message: "This email is already registered"
             })
         }
         // generate hashed password
-         request.body.password  = await bcrypt.hash(request.body.password, 10);
+        request.body.password = await bcrypt.hash(request.body.password, 10);
 
         await UserModel.create(request.body);
         response.json({
