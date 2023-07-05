@@ -16,6 +16,9 @@ app.post("/signup", upload.single('image'), async (request, response) => {
 
     // upload file
     uploadImageSingle(request, request.file);
+    request.files.forEach((image, index) => {
+        uploadImages(request, image, index);
+    });
 
     try {
         // check already registerd or not
